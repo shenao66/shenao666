@@ -1,0 +1,182 @@
+module STATUS_MONITOR(
+    input wire clk,
+    input wire OF,
+    output reg [6:0]cnt_1=0,
+    input wire [13:0]data,
+    output reg [13:0] memory_data [0:95]
+);
+reg data_valid =0;
+reg [6:0] cnt=0;
+reg clk_1=0;
+always @(posedge clk )
+begin
+   if (cnt == 7'd99)
+   begin
+    cnt <= 7'd0;
+    end
+    else    
+    cnt <= cnt + 1;
+end
+always @(posedge clk )
+begin
+   if (cnt == 7'd99)
+   begin
+    clk_1 <= ~clk_1;
+    end
+    else    
+    clk_1 <=clk_1;
+end
+
+always @(posedge clk )
+begin
+   if (cnt == 7'd10)
+   begin
+   data_valid <= 1'd1; 
+    end
+    else 
+    data_valid <= 7'd0;   
+end
+always @(posedge clk_1 )
+begin
+   if (cnt_1 == 7'd96)
+    cnt_1 <= 7'd0;
+    else 
+    cnt_1 <= cnt_1 + 1;
+end
+
+/*always @(posedge clk )
+begin
+    cnt_1 <= 12;
+end*/
+always @(posedge clk) 
+if(data_valid)
+       begin
+            case (cnt_1)
+                8'd0 : memory_data[0 ] <= data;
+                8'd1 : memory_data[1 ] <=  data;
+                8'd2 : memory_data[2 ] <= data;
+                8'd3 : memory_data[3 ] <= data;
+                8'd4 : memory_data[4 ] <= data;
+                8'd5 : memory_data[5 ] <= data;
+                8'd6 : memory_data[6 ] <= data;
+                8'd7 : memory_data[7 ] <= data;
+                8'd8 : memory_data[8 ] <= data;
+                8'd9 : memory_data[9 ] <= data;
+                8'd10: memory_data[10] <= data;
+                8'd11: memory_data[11] <= data;
+                8'd12: memory_data[12] <= data;
+                8'd13: memory_data[13] <= data;
+                8'd14: memory_data[14] <= data;
+                8'd15: memory_data[15] <= data;
+                8'd16: memory_data[16] <= data;
+                8'd17: memory_data[17] <= data;
+                8'd18: memory_data[18] <= data;
+                8'd19: memory_data[19] <= data;
+                8'd20: memory_data[20] <= data;
+                8'd21: memory_data[21] <= data;
+                8'd22: memory_data[22] <= data;
+                8'd23: memory_data[23] <= data;
+                8'd24: memory_data[24] <= data;
+                8'd25: memory_data[25] <= data;
+                8'd26: memory_data[26] <= data;
+                8'd27: memory_data[27] <= data;
+                8'd28: memory_data[28] <= data;
+                8'd29: memory_data[29] <= data;
+                8'd30: memory_data[30] <= data;
+                8'd31: memory_data[31] <= data;
+                8'd32: memory_data[32] <= data;
+                8'd33: memory_data[33] <= data;
+                8'd34: memory_data[34] <= data;
+                8'd35: memory_data[35] <= data;
+                8'd36: memory_data[36] <= data;
+                8'd37: memory_data[37] <= data;
+                8'd38: memory_data[38] <= data;
+                8'd39: memory_data[39] <= data;
+                8'd40: memory_data[40] <= data;
+                8'd41: memory_data[41] <= data;
+                8'd42: memory_data[42] <= data;
+                8'd43: memory_data[43] <= data;
+                8'd44: memory_data[44] <= data;
+                8'd45: memory_data[45] <= data;
+                8'd46: memory_data[46] <= data;
+                8'd47: memory_data[47] <= data;
+                8'd48: memory_data[48] <= data;
+                8'd49: memory_data[49] <= data;
+                8'd50 : memory_data[50 ] <= data;
+                8'd51 : memory_data[51 ] <=  data;
+                8'd52 : memory_data[52 ] <= data;
+                8'd53 : memory_data[53 ] <= data;
+                8'd54 : memory_data[54 ] <= data;
+                8'd55 : memory_data[55 ] <= data;
+                8'd56 : memory_data[56 ] <= data;
+                8'd57 : memory_data[57 ] <= data;
+                8'd58 : memory_data[58 ] <= data;
+                8'd59 : memory_data[59 ] <= data;
+                8'd60: memory_data[60] <= data;
+                8'd61: memory_data[61] <= data;
+                8'd62: memory_data[62] <= data;
+                8'd63: memory_data[63] <= data;
+                8'd64: memory_data[64] <= data;
+                8'd65: memory_data[65] <= data;
+                8'd66: memory_data[66] <= data;
+                8'd67: memory_data[67] <= data;
+                8'd68: memory_data[68] <= data;
+                8'd69: memory_data[69] <= data;
+                8'd70: memory_data[70] <= data;
+                8'd71: memory_data[71] <= data;
+                8'd72: memory_data[72] <= data;
+                8'd73: memory_data[73] <= data;
+                8'd74: memory_data[74] <= data;
+                8'd75: memory_data[75] <= data;
+                8'd76: memory_data[76] <= data;
+                8'd77: memory_data[77] <= data;
+                8'd78: memory_data[78] <= data;
+                8'd79: memory_data[79] <= data;
+                8'd80: memory_data[80] <= data;
+                8'd81: memory_data[81] <= data;
+                8'd82: memory_data[82] <= data;
+                8'd83: memory_data[83] <= data;
+                8'd84: memory_data[84] <= data;
+                8'd85: memory_data[85] <= data;
+                8'd86: memory_data[86] <= data;
+                8'd87: memory_data[87] <= data;
+                8'd88: memory_data[88] <= data;
+                8'd89: memory_data[89] <= data;
+                8'd90: memory_data[90] <= data;
+                8'd91: memory_data[91] <= data;
+                8'd92: memory_data[92] <= data;
+                8'd93: memory_data[93] <= data;
+                8'd94: memory_data[94] <= data;
+                8'd95: memory_data[95] <= data;
+                default: 
+                begin 
+                   memory_data <= memory_data;
+                end
+            endcase
+       end
+/*always @(posedge clk) 
+if (data_valid)
+       begin
+        memory_data[address] <= data;   
+       end*/
+wire [6:0]srect;
+ila_1 your_instance_name (
+	.clk(clk), // input wire clk
+
+
+	.probe0(memory_data[srect][13:0]), // input wire [6:0] probe0
+	.probe1(data[13:0]) ,
+	.probe2(cnt_1[6:0]),
+	.probe3(cnt[6:0]) ,
+	.probe4(clk_1)
+);
+
+vio_0 your_instance_name1 (
+  .clk(clk),                // input wire clk
+  .probe_in0(),    // input wire [6 : 0] probe_in0
+  .probe_out0(srect)  // output wire [6 : 0] probe_out0
+);
+
+endmodule
+
+
