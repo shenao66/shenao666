@@ -1,0 +1,131 @@
+module fir_vi(
+    input wire clk00 ,
+    input wire clk11 ,
+    input wire [13:0] data_0,
+    input wire [13:0] data_1,
+    input wire  outofrange1,
+    input wire  outofrange2,
+    inout wire  SDA,
+    output wire SCL
+);
+   BUFG BUFG_inst (
+      .O(clk), // 1-bit output: Clock output
+      .I(clk00)  // 1-bit input: Clock input
+   );
+
+wire enable_start;
+wire [13:0]ch1_comp;
+wire [13:0]ch2_comp;
+reg [13:0] data_i;
+reg [13:0] data_v;
+reg [13:0] data_00;
+reg [13:0] data_11;
+wire [32:0] data_ii;
+wire [32:0] data_vv;
+wire valid1;
+wire valid2;
+vio_0 your_instance_name (
+  .clk(clk),                
+  .probe_out0(enable_start), 
+  .probe_out1(ch2_comp),  
+  .probe_out2(ch1_comp)
+);
+
+always @(negedge clk )
+begin
+ data_00  <= data_0;
+ data_11  <=  data_1;
+end
+
+always @(negedge clk )
+begin
+if (outofrange1 || !enable_start)
+data_i <= 14'd0;
+else 
+data_i <= data_00 +ch1_comp;
+end
+
+always @(negedge clk )
+begin
+if (outofrange2 || !enable_start)
+data_v <= 14'd0;
+else 
+data_v <= data_11 +ch2_comp;
+end
+wire [27:0] V_square;  
+wire [27:0] I_square;
+    mult_gen_1 Vmag (
+      .CLK(clk),  // input wire CLK
+      .A(data_v),           // input wire [13 : 0] A
+      .B(data_v),        // input wire [7 : 0] B
+      .P(V_square)             // output wire [21 : 0] P
+    );
+
+    mult_gen_1 Imag (                                             
+      .CLK(clk),  // input wire CLK                               
+      .A(data_i),           // input wire [13 : 0] A         
+      .B(data_i),        // input wire [7 : 0] B          
+      .P(I_square)             // output wire [21 : 0] P    
+    ); 
+     cic_compiler_filter_bank I_up4 (
+      .aclk(clk),                              // input wire aclk
+      .s_axis_data_tdata(I_square),    // input wire [23 : 0] s_axis_data_tdata
+      .s_axis_data_tvalid(1),  // input wire s_axis_data_tvalid
+      .s_axis_data_tready(),  // output wire s_axis_data_tready
+      .m_axis_data_tdata(data_ii),    // output wire [23 : 0] m_axis_data_tdata
+      .m_axis_data_tvalid(valid1)  // output wire m_axis_data_tvalid
+    ); 
+         cic_compiler_filter_bank V_up4 (
+      .aclk(clk),                              // input wire aclk
+      .s_axis_data_tdata(V_square),    // input wire [23 : 0] s_axis_data_tdata
+      .s_axis_data_tvalid(1),  // input wire s_axis_data_tvalid
+      .s_axis_data_tready(),  // output wire s_axis_data_tready
+      .m_axis_data_tdata(data_vv),    // output wire [23 : 0] m_axis_data_tdata
+      .m_axis_data_tvalid(valid2)  // output wire m_axis_data_tvalid
+    ); 
+
+wire Vmag_sqrt_valid0;
+wire Imag_sqrt_valid0;
+wire [15:0]Vmag_sqrted0;                                                                                                   
+wire [15:0]Imag_sqrted0;
+    cordic_sqrt Vmag_sq (
+      .aclk(clk),                                        // input wire aclk
+      .s_axis_cartesian_tvalid(enable_start & V_mag_valid),  // input wire s_axis_cartesian_tvalid
+      .s_axis_cartesian_tdata(data_vv),    // input wire [47 : 0] s_axis_cartesian_tdata
+      .m_axis_dout_tvalid(Vmag_sqrt_valid0),            // output wire m_axis_dout_tvalid
+      .m_axis_dout_tdata(Vmag_sqrted0)              // output wire [15 : 0] m_axis_dout_tdata
+    );
+    cordic_sqrt Imag_sq (
+      .aclk(clk),                                        // input wire aclk
+      .s_axis_cartesian_tvalid(enable_start & I_mag_valid),  // input wire s_axis_cartesian_tvalid
+      .s_axis_cartesian_tdata(data_ii),    // input wire [47 : 0] s_axis_cartesian_tdata
+      .m_axis_dout_tvalid(Imag_sqrt_valid0),            // output wire m_axis_dout_tvalid
+      .m_axis_dout_tdata(Imag_sqrted0)              // output wire [15 : 0] m_axis_dout_tdata
+    );
+
+test_si570 test_si570(
+                 . clk (clk11),
+                 . SDA (SDA),
+                  
+                 . SCL (SCL)
+    );
+
+
+ila_0 ila (
+	.clk(clk), // input wire clk
+
+
+	.probe0(Vmag_sqrted0), // input wire [13:0]  probe0  
+	.probe1(Imag_sqrted0), // input wire [13:0]  probe1 
+	.probe2(Vmag_sqrted), // input wire [31:0]  probe2 
+	.probe3(Imag_sqrted), // input wire [31:0]  probe3 
+	.probe4(m_axis_data_tvalid2), // input wire [0:0]  probe4 
+	.probe5(m_axis_data_tvalid1), // input wire [0:0]  probe5
+	.probe6(data_i), // input wire [0:0]  probe4 
+	.probe7(data_v), // input wire [0:0]  probe5
+	.probe8(data_ii), // input wire [0:0]  probe4 
+	.probe9(data_vv),
+	.probe10(V_square), // input wire [0:0]  probe4 
+	.probe11(I_square)
+);
+endmodule
