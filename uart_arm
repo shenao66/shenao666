@@ -1,25 +1,10 @@
 module uart_arm (
     input wire sys_clk,
-
-    input wire  OF,
-    input wire[13:0]data_11,
+    input wire sys_rst_n,
     input  wire rx,
-    output reg  [6:0]cnt,
-    output wire clk_1,
-    output wire oe,
     output wire tx
 );
 
-
-  clk_wiz_0 instance_name
-   (
-    // Clock out ports
-    .clk_out1(clk_1),     // output clk_out1
-   // Clock in ports
-    .clk_in1(sys_clk)      // input clk_in1
-);
-wire sys_rst_n;
-wire [13:0] memory_data_1 [0:95];
 wire [7:0] pi_data;
 wire pi_flag;
 wire [7:0] po_data;
@@ -30,8 +15,7 @@ wire       done;
 wire      read;
 wire [7:0]address;
 wire [15:0] address_arm;
-assign oe = 0;
-assign sys_rst_n = 1;
+
 wire [351:0]memory_data[0:50];
 parameter UART_BPS = 'd115200;
 parameter CLK_FREQ = 'd50_000_000 ;
@@ -70,7 +54,6 @@ send send (
       .  address     (address  )   ,
    . address_arm   (address_arm  )  ,
    .memory_data(memory_data),
-   .memory_data_1(memory_data_1),
    . po_data(po_data),
    . po_flag(po_flag)
 );
@@ -87,13 +70,7 @@ uart_tx (
     . tx       (tx         )
 );
 
-STATUS_MONITOR STATUS_MONITOR(
-    . clk  (clk_1),
-    . OF   (OF),
-    . cnt_1(cnt),
-    .data  (data_11),
-    . memory_data(memory_data_1)
-);
+
 
 
 
